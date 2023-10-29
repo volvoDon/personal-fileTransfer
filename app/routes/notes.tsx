@@ -20,7 +20,7 @@ export default function NotesPage() {
     <div className="flex h-full min-h-screen flex-col">
       <header className="flex items-center justify-between bg-slate-800 p-4 text-white">
         <h1 className="text-3xl font-bold">
-          <Link to=".">Notes</Link>
+          <Link to=".">QwkBndl</Link>
         </h1>
         <p>{user.email}</p>
         <Form action="/logout" method="post">
@@ -36,20 +36,20 @@ export default function NotesPage() {
       <main className="flex h-full bg-white">
         <div className="h-full w-80 border-r bg-gray-50">
           <Link to="new" className="block p-4 text-xl text-blue-500">
-            + New Note
+            + New Bundle
           </Link>
 
           <hr />
 
           {data.noteListItems.length === 0 ? (
-            <p className="p-4">No notes yet</p>
+            <p className="p-4">No Bundles Yet</p>
           ) : (
             <ol>
               {data.noteListItems.map((note) => (
                 <li key={note.id}>
                   <NavLink
                     className={({ isActive }) =>
-                      `block border-b p-4 text-xl ${isActive ? "bg-white" : ""}`
+                      `block border-w p-4 text-xl ${isActive ? "bg-white" : ""}`
                     }
                     to={note.id}
                   >
