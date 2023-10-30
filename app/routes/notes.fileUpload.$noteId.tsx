@@ -1,6 +1,9 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, 
-  redirect, } from "@remix-run/node";
+  redirect,
+  unstable_parseMultipartFormData,
+  unstable_createFileUploadHandler,
+} from "@remix-run/node";
 import {
   Form,
   isRouteErrorResponse,
@@ -27,37 +30,33 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   const userId = await requireUserId(request);
   invariant(params.noteId, "noteId not found");
-  await deleteNote({ id: params.noteId, userId });
-  return redirect("/notes");
+  const standardFileUploadHandler = unstable_createFileUploadHandler({
+    directory: "public/uploads",
+    file: ({ filename }) => `${userId}_${filename}`,
+  });
+  // get file info back after image upload
+  const form = await unstable_parseMultipartFormData(request, standardFileUploadHandler);
+
+  //convert it to an object to padd back as actionData
+  const fileInfo = { fileName: form.get('my-file') };
+  // this is response from upload handler
+  console.log('the form', fileInfo);
+  return redirect(`/notes/${params.noteId}`);
 };
 
 export default function NoteDetailsPage() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
-  
-
   return (
     <div>
-      <h3 className="text-2xl font-bold">{data.note.title}</h3>
-      <p className="py-6">{data.note.body}</p>
-      <hr className="my-4" />
-      <div className="space-y-4">
-      <button 
-      className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"
-      onClick={()=>{navigate(`../fileUpload/${data.note.id}`)}}>Upload a file</button>
-      <Form method="post">
-      <button
-      type='submit'
-      value = "delete"
-      name="intent"
-      className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:bg-red-400"
-      >
-      Delete Bundle
-      </button>
-      </Form>
-
-    </div>
+      <h3 className="text-2xl font-bold">Upload File for {data.note.title}</h3>
+      <p>Upload file must be smaller than 3mb</p>
+      <button onClick={()=>{navigate(-1)}} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400 mt-5">Go Back</button>
+      <div className="mt-5"><Form method="post" encType="multipart/form-data">
+          <input type="file" id="my-file" name="my-file" />
+          <button type="submit">UPLOAD</button>
+      </Form></div>
     </div>
   );
 }
@@ -77,5 +76,5 @@ export function ErrorBoundary() {
     return <div>Note not found</div>;
   }
 
-  return <div>An unexpected error occurred: {error.statusText}</div>;
+  return <div>An unexpected error occurred: {error.data}</div>;
 }
