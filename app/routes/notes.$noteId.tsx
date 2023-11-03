@@ -9,7 +9,7 @@ import {
   useNavigate,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import {getFile, getFileByNote, getFilesByNote, getFilesByUser, cloudStorageUploaderHandler} from "~/models/file.server"
+import {getFile, getFileByNote, getFilesByNote, getFilesByUser} from "~/models/file.server"
 import { deleteNote, getNote } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
 

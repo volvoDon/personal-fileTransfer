@@ -3,6 +3,7 @@ import { json,
   redirect,
   unstable_parseMultipartFormData,
   unstable_createFileUploadHandler,
+  unstable_composeUploadHandlers,
 } from "@remix-run/node";
 import {
   Form,
@@ -12,9 +13,10 @@ import {
   useNavigate,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import {getFile, getFileByNote, getFilesByNote, getFilesByUser, cloudStorageUploaderHandler} from "~/models/file.server"
+import {getFile, getFileByNote, getFilesByNote, getFilesByUser, s3UploadHandler, createS3uploadHandler} from "~/models/file.server"
 import { deleteNote, getNote } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
+import {createFile} from "~/models/file.server";
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const userId = await requireUserId(request);
@@ -30,13 +32,15 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   const userId = await requireUserId(request);
   invariant(params.noteId, "noteId not found");
-  const standardFileUploadHandler = unstable_createFileUploadHandler({
-    directory: "public/uploads",
-    file: ({ filename }) => `${userId}_${filename}`,
-  });
-  // get file info back after image upload
-  const form = await unstable_parseMultipartFormData(request, standardFileUploadHandler);
+  const noteId = params.noteId;
 
+  const newS3 = await createS3uploadHandler(userId)
+
+  // get file info back after image upload
+  const form = await unstable_parseMultipartFormData(request, newS3);
+  if (form) {
+    createFile
+  }
   //convert it to an object to padd back as actionData
   const fileInfo = { fileName: form.get('my-file') };
   // this is response from upload handler

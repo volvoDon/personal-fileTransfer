@@ -25,13 +25,17 @@
     "/public/build"
   ],
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.441.0",
+    "@aws-sdk/s3-request-presigner": "^3.441.0",
     "@google-cloud/storage": "^7.4.0",
     "@prisma/client": "^4.16.2",
     "@remix-run/css-bundle": "^2.1.0",
     "@remix-run/node": "^2.1.0",
     "@remix-run/react": "^2.1.0",
     "@remix-run/serve": "^2.1.0",
+    "aws-sdk": "^2.1487.0",
     "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
     "install": "^0.13.0",
     "isbot": "^3.7.0",
     "npm": "^10.2.1",
