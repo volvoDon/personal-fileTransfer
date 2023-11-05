@@ -20,11 +20,6 @@ QwkBndl is a file transfer service with a twist – it's also my portfolio showc
 
 ## Local Development
 
-Follow these instructions to set up the project locally.
-
-### Prerequisites
-- Node.js (Specify version)
-- A running instance of SQL database (Specify version and type)
-- An AWS account with S3 configured
+You will need to configure your S3 bucket and create a .env containing your S3 credentials (create an AWS user with S3 permisions in IAM) Once you do that and initialize prisma it should work for you!
 
 # !There is no paywall because it's my personal portfolio so I may have to delete it eventually if it gets abused!
