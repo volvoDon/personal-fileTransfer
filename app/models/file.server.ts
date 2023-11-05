@@ -33,7 +33,7 @@ export function getFilesByNote(id: Note['id']) {
 
 
 export function createFile(noteId: Note['id'], userId: User['id'], body: string,filePath: string) {
-    return prisma.file.create({
+    const file =  prisma.file.create({
       data: {
         path: filePath,
         body: body,// Specify the file path or other attributes here
@@ -45,6 +45,8 @@ export function createFile(noteId: Note['id'], userId: User['id'], body: string,
         }
       }
     });
+    
+    return file
 };
 
 export function getFilesByUser(userId: User['id']){
@@ -60,7 +62,7 @@ const s3 = new S3({
 });
 
 
-export function createS3uploadHandler(userId:string): UploadHandler {
+export function createS3uploadHandler(userId:string, noteId: string): UploadHandler {
   return async ({ filename, data}) => {
     // If no filename, don't handle the upload.
     if (!filename) return undefined;
@@ -78,7 +80,8 @@ export function createS3uploadHandler(userId:string): UploadHandler {
         Body: stream,
       }).promise();
   
-      
+      await createFile(noteId,userId,s3Response.Key,s3Response.Location);
+
       return s3Response.Location;
     } catch (error) {
       throw new Error(`Error uploading file: ${error}`);

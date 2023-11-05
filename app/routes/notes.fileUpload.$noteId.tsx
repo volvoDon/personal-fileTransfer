@@ -34,7 +34,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   invariant(params.noteId, "noteId not found");
   const noteId = params.noteId;
 
-  const newS3 = await createS3uploadHandler(userId)
+  const newS3 = await createS3uploadHandler(userId,noteId);
 
   // get file info back after image upload
   const form = await unstable_parseMultipartFormData(request, newS3);

@@ -9,19 +9,22 @@ import {
   useNavigate,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import {getFile, getFileByNote, getFilesByNote, getFilesByUser} from "~/models/file.server"
+import {getFilesByNote} from "~/models/file.server"
 import { deleteNote, getNote } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const userId = await requireUserId(request);
   invariant(params.noteId, "noteId not found");
-
+  
   const note = await getNote({ id: params.noteId, userId });
   if (!note) {
     throw new Response("Not Found", { status: 404 });
   }
-  return json({ note });
+
+  const files = await getFilesByNote(params.noteId);
+
+  return json({note, files });
 };
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
@@ -41,6 +44,10 @@ export default function NoteDetailsPage() {
     <div>
       <h3 className="text-2xl font-bold">{data.note.title}</h3>
       <p className="py-6">{data.note.body}</p>
+      <h4>Files</h4>
+      {data.files.length === 0 ? <p>no files currently... </p> : data.files.map((file)=>(
+        <li>{file.body}</li>
+      ))}
       <hr className="my-4" />
       <div className="space-y-4">
       <button 
