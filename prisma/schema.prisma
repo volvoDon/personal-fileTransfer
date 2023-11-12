@@ -43,8 +43,8 @@ model File {
   id   String @id @default(cuid())
   path String
   body String
-  note   Note    @relation(fields: [noteId], references: [id])
+  note   Note    @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId String
-  User   User?   @relation(fields: [userId], references: [id])
+  User   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
 }

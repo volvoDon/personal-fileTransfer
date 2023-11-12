@@ -61,8 +61,37 @@ const s3 = new S3({
   region: 'us-east-2',
 });
 
+export async function remove_file (file: {id: string, body: string, path:string}) {
+  if(!bucketname) {return undefined}
+  try{
+    const deleted_s3 = await s3.deleteObject({
+      Key: file.body,
+      Bucket: bucketname,
+    });
+    const deleted_db = await prisma.file.delete({
+      where: {id: file.id}
+    });
+  } catch (error) {
+    throw new Error('nothing')
+  };
+};
 
-export function createS3uploadHandler(userId:string, noteId: string): UploadHandler {
+async function* withSizeCheck(
+  data: AsyncIterable<Uint8Array>, 
+  maxPartSize: number
+): AsyncIterable<Uint8Array> {
+  let size = 0;
+  for await (const chunk of data) {
+      size += chunk.byteLength;
+      if (size > maxPartSize) {
+          throw new Error("File too large");
+      }
+      yield chunk;
+  }
+}
+
+
+export function createS3uploadHandler(userId:string, noteId: string, maxPartSize:number): UploadHandler {
   return async ({ filename, data}) => {
     // If no filename, don't handle the upload.
     if (!filename) return undefined;
@@ -70,17 +99,21 @@ export function createS3uploadHandler(userId:string, noteId: string): UploadHand
   
     // Construct the Key for the S3 object. This could include a directory path.
     const Key = `uploads/${userId}_${filename}`;
-    const stream = Readable.from(data);
-    
+
     // Upload the file to S3
     try {
+      const checkedData = withSizeCheck(data, maxPartSize);
+      const stream = Readable.from(checkedData);
       const s3Response = await s3.upload({
         Bucket: bucketname,
         Key,
         Body: stream,
       }).promise();
   
-      await createFile(noteId,userId,s3Response.Key,s3Response.Location);
+      const db_file = await createFile(noteId,userId,s3Response.Key,s3Response.Location);
+      if (!db_file) {
+        throw new Error("failed to create db record")
+      };
 
       return s3Response.Location;
     } catch (error) {
