@@ -5,6 +5,14 @@ import {S3} from "aws-sdk";
 import { Readable } from "stream";
 require('dotenv').config();
 
+type FileType = {
+  id: string;
+  path: string;
+  body: string;
+  noteId: string;
+  userId: string | null;
+};
+
 const bucketname = process.env.BUCKET_NAME;
 if (!bucketname) {
   console.error("Bucket name is required");
@@ -18,9 +26,16 @@ export function getFileByNote(id: Note['id']) {
     });
 };
 
-export function getFile(id: File['id']) {
+export function getFile(id: File['id']): Promise<FileType | null> {
     return prisma.file.findFirst({
-        where: {id: id}
+        where: {id: id},
+        select: {
+          id: true,
+          path: true,
+          body: true,
+          noteId: true,
+          userId: true,
+        },
     });
 };
 
@@ -67,7 +82,7 @@ export async function remove_file (file: {id: string, body: string, path:string}
     const deleted_s3 = await s3.deleteObject({
       Key: file.body,
       Bucket: bucketname,
-    });
+    }).promise();
     const deleted_db = await prisma.file.delete({
       where: {id: file.id}
     });

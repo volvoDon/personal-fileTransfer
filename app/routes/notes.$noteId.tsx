@@ -7,6 +7,7 @@ import {
   useLoaderData,
   useRouteError,
   useNavigate,
+  Link,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import {getFilesByNote} from "~/models/file.server"
@@ -46,7 +47,11 @@ export default function NoteDetailsPage() {
       <p className="py-6">{data.note.body}</p>
       <h4>Files</h4>
       {data.files.length === 0 ? <p>no files currently... </p> : data.files.map((file)=>(
-        <li>{file.body}</li>
+        <span>
+          <span><Form method="post" action={`/file/${file.id}`}>
+            <button type="submit">{file.body}</button>
+          </Form></span>
+        </span>
       ))}
       <hr className="my-4" />
       <div className="space-y-4">
